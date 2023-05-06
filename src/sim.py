@@ -48,7 +48,7 @@ class Simulator:
     ) -> None:
         # Add an "always ready" task to the task set.
         # It has the lowest priority, and measures the amount of free CPU.
-        lowest_prio = max([t.priority for t in task_set])
+        lowest_priority = max([t.priority for t in task_set])
         self.tasks = set(task_set)
         self.tasks.add(
             Task(

@@ -9,6 +9,11 @@ from dataclasses import dataclass
 
 @dataclass
 class Task:
+    """ Represents a task in a real-time system.
+    
+    Attributes need to be set before running the sim,
+    except for response_time, which is set by the sim.
+    """
     name: str
     priority: int
     period: int
@@ -19,6 +24,10 @@ class Task:
 
 
 class Simulator:
+    """ The schedulability simulator.
+    
+    TODO: Extend description.
+    """
     timeline: dict[tuple[int, int], Task]
     tasks: set[Task]
 
@@ -35,7 +44,7 @@ class Simulator:
     ) -> None:
         # Add an "always ready" task to the task set.
         # It has the lowest priority, and measures the amount of free CPU.
-        lowest_priority = max([t.priority for t in task_set])
+        lowest_priority = max(t.priority for t in task_set)
         self.tasks = set(task_set)
         self.tasks.add(
             Task(
@@ -47,3 +56,5 @@ class Simulator:
                 wcet=duration + 1,
             )
         )
+
+

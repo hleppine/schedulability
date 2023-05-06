@@ -4,7 +4,10 @@ The simulator can be used to analyse the schedulability
 of task sets with fixed-priority pre-emptive scheduling.
 """
 
+from dataclasses import dataclass
 
+
+@dataclass
 class Task:
     name: str
     priority: int
@@ -12,23 +15,7 @@ class Task:
     deadline: int
     offset: int
     wcet: int
-    response_time: int
-
-    def __init__(
-        self,
-        name: str,
-        priority: int,
-        period: int,
-        deadline: int,
-        offset: int,
-        wcet: int,
-    ):
-        self.name = name
-        self.priority = priority
-        self.period = period
-        self.deadline = deadline
-        self.offset = offset
-        self.wcet = wcet
+    response_time: int = 0
 
 
 class Simulator:

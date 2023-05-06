@@ -45,7 +45,7 @@ class Simulator:  # pylint: disable=too-few-public-methods
         duration: int,
     ) -> None:
         """Run the simulator.
-        
+
         Runs the simulator with the given task set for the specified duration.
         Simulation starts at t=0.
         """

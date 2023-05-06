@@ -24,7 +24,7 @@ class Task:
     response_time: int = 0
 
 
-class Simulator:
+class Simulator:  # pylint: disable=too-few-public-methods
     """The schedulability simulator.
 
     TODO: Extend description.
@@ -44,6 +44,11 @@ class Simulator:
         task_set: set[Task],
         duration: int,
     ) -> None:
+        """Run the simulator.
+        
+        Runs the simulator with the given task set for the specified duration.
+        Simulation starts at t=0.
+        """
         # Add an "always ready" task to the task set.
         # It has the lowest priority, and measures the amount of free CPU.
         lowest_priority = max(t.priority for t in task_set)

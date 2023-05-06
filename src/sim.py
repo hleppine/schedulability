@@ -9,11 +9,12 @@ from dataclasses import dataclass
 
 @dataclass
 class Task:
-    """ Represents a task in a real-time system.
+    """Represents a task in a real-time system.
     
     Attributes need to be set before running the sim,
     except for response_time, which is set by the sim.
     """
+
     name: str
     priority: int
     period: int
@@ -24,10 +25,11 @@ class Task:
 
 
 class Simulator:
-    """ The schedulability simulator.
+    """The schedulability simulator.
     
     TODO: Extend description.
     """
+
     timeline: dict[tuple[int, int], Task]
     tasks: set[Task]
 
@@ -56,5 +58,4 @@ class Simulator:
                 wcet=duration + 1,
             )
         )
-
 

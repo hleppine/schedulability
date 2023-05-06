@@ -3,7 +3,7 @@ name: Static analysis
 on: [push]
 
 jobs:
-  pylint:
+  static_analysis:
 
     runs-on: ubuntu-latest
 

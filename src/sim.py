@@ -10,7 +10,7 @@ from dataclasses import dataclass
 @dataclass
 class Task:
     """Represents a task in a real-time system.
-    
+
     Attributes need to be set before running the sim,
     except for response_time, which is set by the sim.
     """
@@ -26,7 +26,7 @@ class Task:
 
 class Simulator:
     """The schedulability simulator.
-    
+
     TODO: Extend description.
     """
 
@@ -58,4 +58,3 @@ class Simulator:
                 wcet=duration + 1,
             )
         )
-

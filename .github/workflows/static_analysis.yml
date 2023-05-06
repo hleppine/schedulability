@@ -25,7 +25,7 @@ jobs:
         pylint
     - name: Run isort
       run: |
-        isort . -c
+        isort . -c -v
     - name: Run black
       run: |
         black --check ./src

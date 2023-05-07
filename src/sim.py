@@ -4,7 +4,22 @@ The simulator can be used to analyse the schedulability
 of task sets with fixed-priority pre-emptive scheduling.
 """
 
+from enum import Enum
 from typing import Optional
+
+
+class TaskState(Enum):
+    """Task state.
+    
+    An idle task has no work to perform.
+    A ready task has work to perform and is waiting
+    for its turn to run.
+    A running task currently performs its work.
+    Only one task can be running at a time.
+    """
+    IDLE = 0
+    READY = 1
+    RUNNING = 2
 
 
 class Task:
@@ -20,8 +35,10 @@ class Task:
     deadline: int
     offset: int
     wcet: int
-    response_time: Optional[int]
+    response_time: int
     last_time_ready: int
+    state: TaskState
+    work_left: int
 
     def __init__(
         self,
@@ -39,8 +56,10 @@ class Task:
         self.offset = offset
         self.wcet = wcet
 
-        self.response_time = None
+        self.response_time = 0
         self.last_time_ready = offset
+        self.state = TaskState.IDLE
+        self.work_left = 0
 
     def next_time_ready(
         self,

@@ -67,14 +67,14 @@ class Task:
         now: int,
     ) -> bool:
         """Returns True if the task becomes ready at the given now."""
-        return (now - offset) % period == 0
+        return (now - self.offset) % self.period == 0
 
     def next_time_ready(
         self,
         now: int,
     ) -> int:
         """Determine the next time the task becomes ready."""
-        return now + period - (now - offset) % period
+        return now + self.period - (now - self.offset) % self.period
 
 
 class Simulator:
@@ -136,10 +136,11 @@ class Simulator:
             # A priori it's the next time some task becomes ready.
             # This might be adjusted below if the current task
             # completes its remaining work.
-            new_now = always_ready_task.next_time_ready()
+            new_now = duration
             for task in self.tasks:
-                if task.next_time_ready() < new_now:
-                    new_now = task.next_time_ready()
+                task_next_time_ready = task.next_time_ready(now)
+                if task_next_time_ready < new_now:
+                    new_now = task_next_time_ready
             # Select which task actually runs during the next slice:
             # The task with the highest priority that is ready.
             # Could be the same task that was already running.

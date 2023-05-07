@@ -10,13 +10,14 @@ from typing import Optional
 
 class TaskState(Enum):
     """Task state.
-    
+
     An idle task has no work to perform.
     A ready task has work to perform and is waiting
     for its turn to run.
     A running task currently performs its work.
     Only one task can be running at a time.
     """
+
     IDLE = 0
     READY = 1
     RUNNING = 2

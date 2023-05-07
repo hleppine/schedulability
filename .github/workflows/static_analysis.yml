@@ -25,7 +25,7 @@ jobs:
         pylint
     - name: Run isort
       run: |
-        isort ./sched ./tests -c -v -df
+        isort ./sched ./tests -c -df
     - name: Run black
       run: |
         black --diff --check ./sched ./tests

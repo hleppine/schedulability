@@ -1,5 +1,4 @@
-from sched.sim import Simulator
-from sched.sim import Task
+from sched.sim import Simulator, Task
 
 
 def test():
@@ -30,7 +29,7 @@ def test():
         ),
     ]
     sim = Simulator()
-    sim.run(task_set, 50)
+    sim.run(task_set, 60)
     for x in sim.timeline:
         print(f"{x[0]} .. {x[1]}: {x[2]}")
 

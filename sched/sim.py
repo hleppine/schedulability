@@ -157,6 +157,7 @@ class Simulator:
                 # Current task finishes its work before/at the new now.
                 # Thus we adjust the new now to be the instant
                 # when the current task completes its work.
+                slice_len = current_task.work_left
                 new_now = now + slice_len
                 current_task.work_left = 0
                 current_task.state = TaskState.IDLE
@@ -169,6 +170,5 @@ class Simulator:
             # Advance the simulation to the next interesting time instant.
             self.timeline.append((now, new_now, current_task.name))
             now = new_now
-            print(now)
         # Once the while loop ends, now must be exactly at duration.
         assert now == duration

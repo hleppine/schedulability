@@ -167,8 +167,12 @@ class Simulator:
             else:
                 # Current task continues to have work after this slice.
                 current_task.work_left -= slice_len
+            # Add a new slice to the timeline, or extend the current slice.
+            if self.timeline and self.timeline[-1][2] == current_task.name:
+                self.timeline[-1][1] = new_now
+            else:
+                self.timeline.append((now, new_now, current_task.name))
             # Advance the simulation to the next interesting time instant.
-            self.timeline.append((now, new_now, current_task.name))
             now = new_now
         # Once the while loop ends, now must be exactly at duration.
         assert now == duration

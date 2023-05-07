@@ -40,6 +40,16 @@ def test():
     ]
     sim = Simulator()
     sim.run(task_set, 60)
+    expected_timeline = [
+        (0, 10, "c"),
+        (10, 20, "b"),
+        (20, 30, "a"),
+        (30, 40, "c"),
+        (40, 50, "b"),
+        (50, 60, "a"),
+    ]
+    assert sim.timeline == expected_timeline
+    # TODO: Detect the overrun that occurs in this task set
     for item in sim.timeline:
         print(f"{item[0]} .. {item[1]}: {item[2]}")
 

@@ -4,11 +4,10 @@ The simulator can be used to analyse the schedulability
 of task sets with fixed-priority pre-emptive scheduling.
 """
 
-from dataclasses import dataclass
+from typing import Optional
 
 
-@dataclass
-class Task:
+class Task:  # pylint: disable=too-few-public-methods
     """Represents a task in a real-time system.
 
     Attributes need to be set before running the sim,
@@ -21,7 +20,40 @@ class Task:
     deadline: int
     offset: int
     wcet: int
-    response_time: int = 0
+    response_time: Optional[int]
+    last_time_ready: int
+
+    def __init__(  # pylint: disable=too-many-arguments
+        self,
+        name: str,
+        priority: int,
+        period: int,
+        deadline: int,
+        offset: int,
+        wcet: int,
+    ):
+        self.name = name
+        self.priority = priority
+        self.period = period
+        self.deadline = deadline
+        self.offset = offset
+        self.wcet = wcet
+
+        self.response_time = None
+        self.last_time_ready = offset
+
+    def next_time_ready(
+        self,
+        now: int,
+    ) -> int:
+        """Determine the next time the task becomes ready.
+
+        Updates the latest time the task became ready.
+        """
+        if now > self.last_time_ready:
+            self.last_time_ready += self.period
+            assert now <= self.last_time_ready
+        return self.last_time_ready
 
 
 class Simulator:  # pylint: disable=too-few-public-methods

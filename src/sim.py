@@ -90,7 +90,7 @@ class Simulator:
     def __init__(
         self,
     ):
-        self.timeline = {}
+        self.timeline = []
         self.tasks = set()
 
     def run(

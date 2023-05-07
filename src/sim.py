@@ -7,7 +7,7 @@ of task sets with fixed-priority pre-emptive scheduling.
 from typing import Optional
 
 
-class Task:  # pylint: disable=too-few-public-methods
+class Task:
     """Represents a task in a real-time system.
 
     Attributes need to be set before running the sim,
@@ -23,7 +23,7 @@ class Task:  # pylint: disable=too-few-public-methods
     response_time: Optional[int]
     last_time_ready: int
 
-    def __init__(  # pylint: disable=too-many-arguments
+    def __init__(
         self,
         name: str,
         priority: int,
@@ -56,7 +56,7 @@ class Task:  # pylint: disable=too-few-public-methods
         return self.last_time_ready
 
 
-class Simulator:  # pylint: disable=too-few-public-methods
+class Simulator:
     """The schedulability simulator.
 
     TODO: Extend description.

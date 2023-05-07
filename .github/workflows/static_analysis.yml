@@ -34,4 +34,4 @@ jobs:
         mypy ./src
     - name: Run pylint
       run: |
-        pylint ./src
+        pylint --rcfile=./setup.cfg ./src

@@ -169,7 +169,8 @@ class Simulator:
                 current_task.work_left -= slice_len
             # Add a new slice to the timeline, or extend the current slice.
             if self.timeline and self.timeline[-1][2] == current_task.name:
-                self.timeline[-1][1] = new_now
+                item = self.timeline[-1]
+                self.timeline[-1] = (item[0], new_now, item[2])
             else:
                 self.timeline.append((now, new_now, current_task.name))
             # Advance the simulation to the next interesting time instant.

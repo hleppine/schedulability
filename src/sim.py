@@ -5,7 +5,6 @@ of task sets with fixed-priority pre-emptive scheduling.
 """
 
 from enum import Enum
-from typing import Optional
 
 
 class TaskState(Enum):
@@ -58,22 +57,25 @@ class Task:
         self.wcet = wcet
 
         self.response_time = 0
-        self.last_time_ready = offset
         self.state = TaskState.IDLE
         self.work_left = 0
+
+    def becomes_ready(
+        self,
+        now: int,
+    ) -> bool:
+        """Returns True if the task becomes ready at the given now."""
+        return (now - offset) % period == 0
 
     def next_time_ready(
         self,
         now: int,
     ) -> int:
-        """Determine the next time the task becomes ready.
+        """Determine the next time the task becomes ready."""
+        return now + period - (now - offset) % period
 
-        Updates the latest time the task became ready.
-        """
-        if now > self.last_time_ready:
-            self.last_time_ready += self.period
-            assert now <= self.last_time_ready
-        return self.last_time_ready
+
+
 
 
 class Simulator:
@@ -84,12 +86,14 @@ class Simulator:
 
     timeline: dict[tuple[int, int], Task]
     tasks: set[Task]
+    now: int
 
     def __init__(
         self,
     ):
         self.timeline = {}
         self.tasks = set()
+
 
     def run(
         self,
@@ -101,6 +105,7 @@ class Simulator:
         Runs the simulator with the given task set for the specified duration.
         Simulation starts at t=0.
         """
+        now = 0
         # Add an "always ready" task to the task set.
         # It has the lowest priority, and measures the amount of free CPU.
         lowest_priority = max(t.priority for t in task_set)
@@ -109,9 +114,17 @@ class Simulator:
             Task(
                 name="Always_Ready_Task",
                 priority=lowest_priority + 1,
-                period=duration + 1,
-                deadline=duration + 1,
+                period=duration,
+                deadline=duration,
                 offset=0,
-                wcet=duration + 1,
+                wcet=duration,
             )
         )
+        while self.now <= duration:
+            for task in self.tasks:
+
+                if task.becomes_ready(now):
+                    task.state = TaskState.READY
+                    task.work_left += task.wcet
+                
+

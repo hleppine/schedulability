@@ -92,6 +92,17 @@ class Simulator:
     ):
         self.timeline = []
         self.tasks = set()
+        self.now = 0
+        self.new_now = 0
+        self.duration = 0
+        self.always_ready_task = Task(
+            name="Always_Ready_Task",
+            priority=0,
+            period=0,
+            deadline=0,
+            offset=0,
+            wcet=0,
+        )
 
     def run(
         self,
@@ -105,75 +116,85 @@ class Simulator:
         """
         # Add an "always ready" task to the task set.
         # It has the lowest priority, and measures the amount of free CPU.
-        lowest_priority = min(t.priority for t in task_set)
         self.tasks = set(task_set)
-        always_ready_task = Task(
-            name="Always_Ready_Task",
-            priority=lowest_priority - 1,
-            period=duration,
-            deadline=duration,
-            offset=0,
-            wcet=duration,
-        )
-        self.tasks.add(always_ready_task)
-        now = 0
-        while now < duration:
-            # Check which tasks become ready at this time instant.
-            # Tasks that have work left remain ready.
-            for task in self.tasks:
-                if task.state == TaskState.RUNNING:
-                    # If a task is currently running, it must have work left.
-                    assert task.work_left > 0
-                    # Change the currently running task to ready.
-                    # It could become running again below.
-                    task.state = TaskState.READY
-                if task.becomes_ready(now):
-                    task.state = TaskState.READY
-                    if task.work_left == 0:
-                        task.became_ready = now
-                    task.work_left += task.wcet
-            # Select the next time instant to analyze:
-            # A priori it's the next time some task becomes ready.
-            # This might be adjusted below if the current task
-            # completes its remaining work.
-            new_now = duration
-            for task in self.tasks:
-                task_next_time_ready = task.next_time_ready(now)
-                if task_next_time_ready < new_now:
-                    new_now = task_next_time_ready
-            # Select which task actually runs during the next slice:
-            # The task with the highest priority that is ready.
-            # Could be the same task that was already running.
-            current_task = always_ready_task
-            for task in self.tasks:
-                if (
-                    task.state == TaskState.READY
-                    and task.priority > current_task.priority
-                ):
-                    current_task = task
-            current_task.state = TaskState.RUNNING
-            slice_len = new_now - now
-            if current_task.work_left <= slice_len:
-                # Current task finishes its work before/at the new now.
-                # Thus we adjust the new now to be the instant
-                # when the current task completes its work.
-                slice_len = current_task.work_left
-                new_now = now + slice_len
-                current_task.work_left = 0
-                current_task.state = TaskState.IDLE
-                new_response_time = new_now - task.became_ready
-                if new_response_time > task.response_time:
-                    task.response_time = new_response_time
-            else:
-                # Current task continues to have work after this slice.
-                current_task.work_left -= slice_len
-            # Add a new slice to the timeline, or extend the current slice.
-            if self.timeline and self.timeline[-1][2] == current_task.name:
-                item = self.timeline[-1]
-                self.timeline[-1] = (item[0], new_now, item[2])
-            else:
-                self.timeline.append((now, new_now, current_task.name))
-            # Advance the simulation to the next interesting time instant.
-            now = new_now
+        self.always_ready_task.priority = min(t.priority for t in task_set) - 1
+        self.always_ready_task.period = duration
+        self.always_ready_task.deadline = duration
+        self.always_ready_task.wcet = duration
+        self.tasks.add(self.always_ready_task)
+        self.duration = duration
+        self.now = 0
+        self.new_now = 0
+        self.current_task = self.always_ready_task
+        while self.now < self.duration:
+            self.__update_ready_tasks()
+            self.__select_next_ready_time()
+            self.__select_task_to_run()
+            self.__do_work()
         # Once the while loop ends, now must be exactly at duration.
-        assert now == duration
+        assert self.now == self.duration
+
+    def __update_ready_tasks(self) -> None:
+        # Check which tasks become ready at this time instant.
+        # Tasks that have work left remain ready.
+        for task in self.tasks:
+            if task.state == TaskState.RUNNING:
+                # If a task is currently running, it must have work left.
+                assert task.work_left > 0
+                # Change the currently running task to ready.
+                # It could become running again below.
+                task.state = TaskState.READY
+            if task.becomes_ready(self.now):
+                task.state = TaskState.READY
+                if task.work_left == 0:
+                    task.became_ready = self.now
+                task.work_left += task.wcet
+
+    def __select_next_ready_time(self) -> None:
+        # Select the next time instant to analyze:
+        # A priori it's the next time some task becomes ready.
+        # This might be adjusted below if the current task
+        # completes its remaining work.
+        self.new_now = self.duration
+        for task in self.tasks:
+            task_next_time_ready = task.next_time_ready(self.now)
+            if task_next_time_ready < self.new_now:
+                self.new_now = task_next_time_ready
+
+    def __select_task_to_run(self) -> None:
+        # Select which task actually runs during the next slice:
+        # The task with the highest priority that is ready.
+        # Could be the same task that was already running.
+        self.current_task = self.always_ready_task
+        for task in self.tasks:
+            if (
+                task.state == TaskState.READY
+                and task.priority > self.current_task.priority
+            ):
+                self.current_task = task
+        self.current_task.state = TaskState.RUNNING
+
+    def __do_work(self) -> None:
+        slice_len = self.new_now - self.now
+        if self.current_task.work_left <= slice_len:
+            # Current task finishes its work before/at the new now.
+            # Thus we adjust the new now to be the instant
+            # when the current task completes its work.
+            slice_len = self.current_task.work_left
+            self.new_now = self.now + slice_len
+            self.current_task.work_left = 0
+            self.current_task.state = TaskState.IDLE
+            new_response_time = self.new_now - self.current_task.became_ready
+            if new_response_time > self.current_task.response_time:
+                self.current_task.response_time = new_response_time
+        else:
+            # Current task continues to have work after this slice.
+            self.current_task.work_left -= slice_len
+        # Add a new slice to the timeline, or extend the current slice.
+        if self.timeline and self.timeline[-1][2] == self.current_task.name:
+            item = self.timeline[-1]
+            self.timeline[-1] = (item[0], self.new_now, item[2])
+        else:
+            self.timeline.append((self.now, self.new_now, self.current_task.name))
+        # Advance the simulation to the next interesting time instant.
+        self.now = self.new_now

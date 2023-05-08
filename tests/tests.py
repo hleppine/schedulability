@@ -38,8 +38,8 @@ def test():
             wcet=10,
         ),
     ]
-    sim = Simulator()
-    sim.run(task_set, 60)
+    sim = Simulator(task_set, 60)
+    sim.run()
     expected_timeline = [
         (0, 10, "c"),
         (10, 20, "b"),

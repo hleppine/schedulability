@@ -86,53 +86,59 @@ class Simulator:
     timeline: list[tuple[int, int, str]]
     tasks: set[Task]
     now: int
+    new_now: int
+    duration: int
+    always_ready_task: Task
+    current_task: Task
 
     def __init__(
         self,
-    ):
-        self.timeline = []
-        self.tasks = set()
-        self.now = 0
-        self.new_now = 0
-        self.duration = 0
-        self.always_ready_task = Task(
-            name="Always_Ready_Task",
-            priority=0,
-            period=0,
-            deadline=0,
-            offset=0,
-            wcet=0,
-        )
-
-    def run(
-        self,
         task_set: set[Task],
         duration: int,
-    ) -> None:
-        """Run the simulator.
-
-        Runs the simulator with the given task set for the specified duration.
-        Simulation starts at t=0.
-        """
-        # Add an "always ready" task to the task set.
-        # It has the lowest priority, and measures the amount of free CPU.
+    ):
         self.tasks = set(task_set)
-        self.always_ready_task.priority = min(t.priority for t in task_set) - 1
-        self.always_ready_task.period = duration
-        self.always_ready_task.deadline = duration
-        self.always_ready_task.wcet = duration
-        self.tasks.add(self.always_ready_task)
         self.duration = duration
+
+        self.timeline = []
         self.now = 0
         self.new_now = 0
+        # Add an "always ready" task to the task set.
+        # It has the lowest priority, and measures the amount of free CPU.
+        self.always_ready_task = Task(
+            name="Always_Ready_Task",
+            priority=min(t.priority for t in task_set) - 1,
+            period=duration,
+            deadline=duration,
+            offset=0,
+            wcet=duration,
+        )
+        self.tasks.add(self.always_ready_task)
         self.current_task = self.always_ready_task
+
+    def run(self) -> None:
+        """Run the simulator.
+
+        Runs the simulator until the end, i.e. the specified duration is reached.
+        """
         while self.now < self.duration:
+            self.run_slice()
+        # Once the while loop ends, "now" must be exactly at "duration".
+        assert self.now == self.duration
+
+    def run_slice(self) -> None:
+        """Runs the simulator for one timeslice.
+
+        The simulator runs until one of the following occurs:
+        - Some task becomes ready.
+        - The current task finishes its work.
+
+        Does nothing if the simulation is already at end.
+        """
+        if self.now < self.duration:
             self.__update_ready_tasks()
             self.__select_next_ready_time()
             self.__select_task_to_run()
             self.__do_work()
-        # Once the while loop ends, now must be exactly at duration.
-        assert self.now == self.duration
 
     def __update_ready_tasks(self) -> None:
         # Check which tasks become ready at this time instant.

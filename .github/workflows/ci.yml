@@ -20,6 +20,7 @@ jobs:
       run: >-
         pip install 
         black
+        flake8
         isort
         mypy
         pylint
@@ -32,6 +33,9 @@ jobs:
     - name: Run mypy
       run: |
         mypy ./sched ./tests
+    - name: Run flake8
+      run: |
+        flake8 ./sched ./tests
     - name: Run pylint
       run: |
         pylint --rcfile=./setup.cfg ./sched ./tests
